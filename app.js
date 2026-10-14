@@ -58,35 +58,31 @@ $('form').addEventListener('submit', async e => {
     $('warnings').hidden = !result.warnings.length;
     $('warning-list').replaceChildren(...result.warnings.map(w => { const li = document.createElement('li'); li.textContent = w; return li; }));
     $('sample-note').textContent = `전체 ${result.preview.length}명 중 처음 ${Math.min(5, result.preview.length)}명을 표시합니다.`;
-    $('preview').replaceChildren(...result.preview.slice(0, 5).map((r, i) => {
+    $('preview').replaceChildren(...result.preview.slice(0, 5).map(r => {
       const tr = document.createElement('tr');
-      const cells = Array.from({ length: 4 }, () => tr.appendChild(document.createElement('td')));
-      const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'test-student'; radio.value = i; radio.checked = i === 0; radio.setAttribute('aria-label', `${r.name} 1명 테스트 선택`); cells[0].append(radio);
-      cells[1].textContent = r.name; const small = document.createElement('small'); small.textContent = r.id; cells[1].append(small);
-      cells[2].textContent = `${r.grade} / ${r.maximum}`; cells[3].textContent = r.feedback;
+      const cells = Array.from({ length: 3 }, () => tr.appendChild(document.createElement('td')));
+      cells[0].textContent = r.name; const small = document.createElement('small'); small.textContent = r.id; cells[0].append(small);
+      cells[1].textContent = `${r.grade} / ${r.maximum}`; cells[2].textContent = r.feedback;
       return tr;
     }));
     $('result').hidden = false; status(`엑셀 ${result.max}점 만점에서 워크시트 만점으로 환산했습니다. 점수·피드백 외의 열은 유지했습니다.`);
   } catch (e) { status(e.message || '변환에 실패했습니다.', true); }
   $('convert').textContent = '결과 확인'; ready();
 });
-function download(test) {
+function download() {
   if (!result) return;
-  const chosen = Number(document.querySelector('input[name=test-student]:checked').value);
-  const rows = test ? [result.rows[0], result.rows[chosen + 1]] : result.rows;
-  const blob = new Blob([LearnUsConverter.csv(rows)], { type: 'text/csv;charset=utf-8' });
+  const blob = new Blob([LearnUsConverter.csv(result.rows)], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob), a = document.createElement('a');
-  a.href = url; a.download = `${$('sheet').value}_${$('section').value}_${test ? '1명테스트' : '전체'}_채점워크시트.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  a.href = url; a.download = `${$('sheet').value}_${$('section').value}_전체_채점워크시트.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-$('download').addEventListener('click', () => download(false));
-$('test').addEventListener('click', () => download(true));
+$('download').addEventListener('click', download);
 
 function renderCsvPreview() {
   const [headers, ...students] = previewRows;
   const find = (...names) => headers.findIndex(h => names.includes(h.trim()));
   const name = find('이름', 'Full name'), id = find('학번', 'ID number'), grade = find('성적', 'Grade'), max = find('최대 성적', 'Maximum grade'), feedback = find('피드백', 'Feedback comments');
   if ([name,id,grade,max,feedback].includes(-1)) throw Error('이름·학번·성적·최대 성적·피드백 열이 있는 채점 워크시트를 선택하세요.');
-  const count = $('preview-count').value === 'all' ? students.length : Number($('preview-count').value);
+  const count = 5;
   $('csv-preview-summary').textContent = `전체 ${students.length}명 중 ${Math.min(count, students.length)}명`;
   $('csv-preview-body').replaceChildren(...students.slice(0, count).map(r => {
     const tr = document.createElement('tr');
@@ -110,4 +106,3 @@ $('csv-preview-file').addEventListener('change', async () => {
     $('preview-status').classList.remove('error');
   } catch(e) { previewRows = null; $('preview-status').textContent = e.message; $('preview-status').classList.add('error'); }
 });
-$('preview-count').addEventListener('change', () => { if (previewRows) renderCsvPreview(); });

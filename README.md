@@ -4,8 +4,8 @@
 
 - 퀴즈와 다중 문제 과제의 배점·점수 합산 및 만점 환산
 - 학번 매칭, 중복·누락·감점 사유·총점 검증
-- 1명 테스트 CSV 및 전체 CSV 다운로드
-- 업로드 CSV 미리보기, 줄바꿈 표시, 사용방법
+- 전체 CSV 일괄 다운로드
+- 처음 5명 CSV 미리보기, 줄바꿈 표시, LearnUs 설정부터 설명하는 캡처 안내
 - Pretendard 폰트 자체 호스팅
 
 사이트: https://viokorea.github.io/learnus-grading-csv/
@@ -16,7 +16,7 @@ HTML·CSS·JS와 라이브러리·폰트만 포함합니다. 학생 데이터, �
 
 ## 개발
 
-`python3 -m http.server 8765`로 로컬 미리보기. `node tests/test-converter.cjs`로 검증합니다.
+`python3 -m http.server 8765`로 로컬 미리보기. `node tests/test-converter.cjs`와 `node tests/test-ui.cjs`로 검증합니다.
 
 ## 배포
 
