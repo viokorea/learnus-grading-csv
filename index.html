@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>LearnUs 채점 CSV 변환</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preload" href="fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<script defer src="vendor/xlsx.full.min.js"></script>
+<script defer src="converter.js"></script>
+<script defer src="app.js"></script>
+</head>
+<body>
+<nav class="nav" aria-label="주 메뉴"><a class="brand" href="#convert">LearnUs <span>CSV</span></a><div class="nav-links"><a href="#convert" data-view="convert">변환하기</a><a href="#preview" data-view="preview">CSV 미리보기</a><a href="#guide" data-view="guide">사용방법</a></div></nav>
+<main>
+<section id="convert-view" class="view">
+<header><h1>채점 워크시트 변환</h1><p>채점 엑셀의 점수와 감점 사유를 LearnUs 업로드용 CSV로 옮깁니다.</p></header>
+<form id="form">
+<section class="files" aria-label="입력 파일">
+<label class="file"><strong>채점 엑셀</strong><span>점수와 감점 사유가 작성된 .xlsx</span><input id="excel" type="file" accept=".xlsx" required><span class="filename" id="excel-name">파일을 선택하세요</span></label>
+<label class="file"><strong>LearnUs 채점 워크시트</strong><span>같은 과제·분반에서 다운로드한 .csv</span><input id="worksheet" type="file" accept=".csv" required><span class="filename" id="worksheet-name">파일을 선택하세요</span></label>
+</section>
+<div class="settings"><label>채점 시트<select id="sheet" disabled required><option value="">엑셀을 먼저 선택하세요</option></select></label><label>분반<select id="section" disabled required><option value="">시트를 선택하세요</option></select></label><button id="convert" disabled>결과 확인</button></div>
+</form>
+<p id="status" role="status" aria-live="polite">학번으로 학생을 연결하고, 문제 배점과 워크시트 만점으로 점수를 환산합니다.</p>
+<section id="result" hidden>
+<div class="result-head"><div><h2 id="summary"></h2><p id="sample-note">처음 5명만 표시합니다.</p></div><div class="actions"><button id="test" type="button">선택한 1명 CSV</button><button id="download" type="button">전체 CSV 다운로드</button></div></div>
+<p class="check-note">학생과 점수·감점 사유가 맞는지 확인해주세요. 피드백의 줄바꿈도 함께 확인하세요.</p>
+<details id="warnings" hidden><summary id="warning-count"></summary><ul id="warning-list"></ul></details>
+<div class="table-wrap"><table><thead><tr><th>테스트</th><th>성명 / 학번</th><th>성적</th><th>피드백 댓글</th></tr></thead><tbody id="preview"></tbody></table></div>
+<p class="hint">LearnUs의 ‘채점 워크시트 업로드’에서 CSV를 선택한 뒤 변경 목록을 확인하세요. ZIP 피드백 첨부와는 다른 기능입니다.</p>
+</section>
+</section>
+<section id="preview-view" class="view" hidden>
+<header><h1>CSV 미리보기</h1><p>LearnUs에 올릴 파일을 선택하고, 학생과 점수·피드백이 맞는지 확인해주세요.</p></header>
+<label class="file preview-file"><strong>확인할 채점 워크시트 CSV</strong><span>원본 또는 변환된 업로드용 CSV를 선택하세요.</span><input id="csv-preview-file" type="file" accept=".csv"><span class="filename" id="csv-preview-name">아직 파일을 선택하지 않았습니다.</span></label>
+<p id="preview-status" role="status" aria-live="polite">처음 5명을 표시합니다. 파일 내용은 서버로 전송하지 않습니다.</p>
+<section id="csv-preview-result" hidden><div class="result-head"><h2 id="csv-preview-summary"></h2><label class="row-count">표시할 행<select id="preview-count"><option value="5">처음 5명</option><option value="10">처음 10명</option><option value="all">전체</option></select></label></div><div class="table-wrap"><table><thead><tr><th>성명 / 학번</th><th>성적</th><th>피드백 댓글</th></tr></thead><tbody id="csv-preview-body"></tbody></table></div><p class="hint">이 화면은 CSV에 저장된 내용을 보여줍니다. 채점의 정확성은 원본 엑셀과 대조하세요.</p></section>
+</section>
+<section id="guide-view" class="view" hidden>
+<header><h1>사용방법</h1><p>처음에는 1명으로 테스트하고, 점수와 댓글을 확인한 뒤 전체 파일을 올리세요.</p></header>
+<ol class="guide-steps">
+<li><h2>LearnUs에서 워크시트 받기</h2><p>해당 활동 설정의 ‘피드백 댓글’과 ‘오프라인 채점 워크시트’를 활성화합니다. 채점 화면에서 해당 분반을 선택한 뒤 ‘채점 워크시트 다운로드’로 CSV를 받으세요. 새 활동마다 그 활동의 워크시트가 필요합니다.</p></li>
+<li><h2>채점 엑셀과 CSV 선택하기</h2><p>변환하기 화면에서 두 파일을 선택하고 시트와 분반을 확인하세요. 엑셀은 학번·성명·분반과 ‘1번(10점)’ 또는 ‘1번(5점)’ 형태의 점수 열, 바로 옆 감점 사유 열이 필요합니다. 수식이 있다면 Excel에서 계산하고 저장한 파일을 사용하세요.</p></li>
+<li><h2>미리보기에서 확인하기</h2><p>‘결과 확인’을 누르면 처음 5명의 점수와 댓글을 보여줍니다. 문제별 점수를 합산하고 LearnUs 워크시트의 만점으로 환산합니다. 예를 들어 엑셀 7/10점은 워크시트 만점이 100점이면 70점입니다. 제외 학생과 기존 점수·댓글 교체 안내도 확인하세요.</p></li>
+<li><h2>1명 테스트 CSV 올리기</h2><p>미리보기의 학생 한 명을 선택하고 ‘선택한 1명 CSV’를 다운로드하세요. LearnUs의 ‘채점 워크시트 업로드’에서 파일을 선택하고, 변경 목록의 학생·점수·사유를 확인한 뒤 확정합니다. 학생의 피드백 댓글에서 줄바꿈이 표시되는지도 확인하세요.</p></li>
+<li><h2>전체 CSV 올리기</h2><p>테스트가 잘 됐다면 ‘전체 CSV 다운로드’로 받은 파일을 같은 메뉴에 올립니다. 최근 변경된 기록 덮어쓰기 옵션은 실제 LearnUs 수정 내역을 확인한 뒤 선택하세요. ZIP 업로드는 피드백 파일 첨부용이며 점수와 댓글을 넣는 기능이 아닙니다.</p></li>
+</ol>
+<div class="guide-note"><h2>변환이 멈추는 경우</h2><p>학번 중복, 잘못된 분반의 워크시트, 비어 있는 점수, 감점 사유 누락, 총점 불일치를 확인하세요. CSV는 UTF-8이어야 합니다. 엑셀에만 있고 워크시트에 없는 학생은 제외하고 안내합니다.</p></div>
+<a class="text-link" href="#convert">변환하러 가기 →</a>
+</section>
+<footer><span>파일 처리와 변환은 이 브라우저 안에서 이루어집니다.</span><a href="https://docs.moodle.org/502/en/Using_Assignment#Upload_the_completed_grading_worksheet" target="_blank" rel="noopener noreferrer">Moodle 공식 안내 ↗</a></footer>
+</main>
+</body></html>
